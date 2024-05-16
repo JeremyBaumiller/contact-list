@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ContactRow from "./ContactRow";
 
 const dummyContacts = [
@@ -7,8 +7,25 @@ const dummyContacts = [
   { id: 3, name: "BB-8", phone: "888-888-8888", email: "bb8@droids.com" },
 ];
 
-export default function ContactList() {
-  const [contacts, setContacts] = useState(dummyContacts);
+export default function ContactList({ setSelectedContactId }) {
+  const [contacts, setContacts] = useState([]);
+
+  useEffect(() => {
+    async function fetchContacts() {
+      try {
+        const response = await fetch(
+          "https://fsa-jsonplaceholder-69b5c48f1259.herokuapp.com/users"
+        );
+        const result = await response.json();
+        setContacts(result);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setContacts(dummyContacts);
+      }
+    }
+
+    fetchContacts();
+  }, []); // Empty dependency array to ensure useEffect runs only once
 
   return (
     <table>
@@ -23,9 +40,13 @@ export default function ContactList() {
           <td>Email</td>
           <td>Phone</td>
         </tr>
-        {contacts.map((contact) => {
-          return <ContactRow key={contact.id} contact={contact} />;
-        })}
+        {contacts.map((contact) => (
+          <tr key={contact.id} onClick={() => setSelectedContactId(contact.id)}>
+            <td>{contact.name}</td>
+            <td>{contact.email}</td>
+            <td>{contact.phone}</td>
+          </tr>
+        ))}
       </tbody>
     </table>
   );
